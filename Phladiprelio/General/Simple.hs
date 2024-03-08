@@ -3,7 +3,7 @@
 module Phladiprelio.General.Simple where
 
 import GHC.Base
-import GHC.Enum (fromEnum,toEnum)
+import GHC.Enum (fromEnum)
 import GHC.Real (Integral,fromIntegral,(/),quot,rem,quotRem,round,gcd,(^))
 import Text.Show (Show(..))
 import Phladiprelio.General.PrepareText 
@@ -12,19 +12,17 @@ import Phladiprelio.General.Base
 import System.Environment (getArgs)
 import GHC.Num (Num,(+),(-),(*),Integer)
 import Text.Read (readMaybe)
-import System.IO (putStrLn, FilePath,stdout,universalNewlineMode,hSetNewlineMode,getLine,appendFile,readFile,writeFile)
+import System.IO (putStrLn, FilePath,stdout,universalNewlineMode,hSetNewlineMode,getLine,appendFile,readFile,writeFile,putStr)
 import Rhythmicity.MarkerSeqs hiding (id) 
-import Rhythmicity.BasicF 
 import Data.List hiding (foldr)
 import Data.Maybe (fromMaybe, mapMaybe, catMaybes,isNothing,fromJust) 
-import Data.Tuple (fst,snd)
-import Data.Char (isDigit,isAlpha,isSpace)
+import Data.Tuple (fst)
+import Data.Char (isDigit,isSpace)
 import CLI.Arguments
 import CLI.Arguments.Get
 import CLI.Arguments.Parsing
 import GHC.Int (Int8)
 import Data.Ord (comparing)
-import Phladiprelio.PermutationsRepresent
 import Phladiprelio.ConstraintsEncoded
 import Phladiprelio.PermutationsArr
 import Phladiprelio.StrictVG
@@ -189,6 +187,7 @@ argsProcessing wrs ks arr gs us vs h ysss zsss xs = do
       compareByLinesFinalFile = concat . getB "-cm" $ argsB
   if not . null $ compareByLinesFinalFile then do
       compareFilesToOneCommon 14 args11 compareByLinesFinalFile
+      return (0,0,[],False,[],[],[],[],0,False,0,[],0,False,[],[]) 
   else do
     let prepare = any (== "-p") args11
         emptyline = any (== "+l") args11 
@@ -309,8 +308,8 @@ selectSounds
   -> String 
   -> String
 selectSounds g xs = f . sort . concatMap g . words . map (\c -> if c  == '.' then ' ' else c) $ us
-    where (ts,us) = break (== '.') . filter (\c -> c /= 'H' && c /= 'G') $ xs
-          f (x:ts@(y:xs)) 
+    where (_,us) = break (== '.') . filter (\c -> c /= 'H' && c /= 'G') $ xs
+          f (x:ts@(y:_)) 
            | x == y = f ts
            | otherwise = x:f ts
           f xs = xs
@@ -359,9 +358,8 @@ outputWithFile h wrs ks arr gs us vs selStr compards sRepresent code grps fs num
   | otherwise = appendF outputS
            where mBool = null selStr && null compards
                  appendF = appendFile fs
-                 lineOption = head . filter (\(S k _ ts) -> k == num) $ sRepresent
+                 lineOption = head . filter (\(S k _ _) -> k == num) $ sRepresent
                  textP = (\(S _ _ ts) -> ts) lineOption
-                 sylls = createSyllablesPL wrs ks arr gs us vs textP
                  outputS = outputSel lineOption code
                  qqs = readEq4 (mconcat . h . createSyllablesPL wrs ks arr gs us vs) (map (map charS) . mconcat . createSyllablesPL wrs ks arr gs us vs) . basicSplit $ textP
                  (breaks,rs) = showZerosFor2PeriodMusic qqs
