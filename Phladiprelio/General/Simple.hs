@@ -38,6 +38,7 @@ import Phladiprelio.Tests
 import Phladiprelio.General.Datatype3
 import Phladiprelio.General.Distance
 import Phladiprelio.UniquenessPeriodsG
+import Data.ChooseLine
 
 generalF 
  :: Int -- ^ A power of 10. 10 in this power is then multiplied the value of distance if the next ['Double'] argument is not empty. The default one is 4. The proper values are in the range [2..6].
@@ -69,8 +70,13 @@ generalF
  -> [String] 
  -> IO [String] 
 generalF power10 ldc compards html dcfile selStr selFun (prestr,poststr) lineNmb wrs ks arr gs us vs h numTest hc (grps,mxms) descending hashStep emptyline splitting (fs, code) concurrently initstr universalSet 
- | null universalSet = let strOutput = ["You have specified the data and constraints on it that lead to no further possible options.", "Please, specify another data and constraints."] in mapM putStrLn strOutput >> return strOutput
- | length universalSet == 1 = mapM putStrLn universalSet >> return universalSet
+ | null universalSet = do
+     let strOutput = ["You have specified the data and constraints on it that lead to no further possible options.", "Please, specify another data and constraints."] 
+     putStrLn . unlines $ strOutput
+     return strOutput
+ | length universalSet == 1 = do
+     putStrLn . unlines $ universalSet
+     return universalSet
  | otherwise = do
    let syllN = countSyll wrs arr us vs initstr
 --       universalSet = map unwords . permutations $ rss
@@ -82,8 +88,18 @@ generalF power10 ldc compards html dcfile selStr selFun (prestr,poststr) lineNmb
    else let sRepresent = zipWith (\k (x, ys) -> S k x ys) [1..] . 
              (let h1 = if descending then (\(u,w) -> ((-1)*u,w)) else id in sortOn h1) . map (\xss -> (f ldc compards grps mxms xss, xss)) $ universalSet
             strOutput = (:[]) . halfsplit1G (\(S _ y _) -> y) (if html then "<br>" else "") (jjj splitting) $ sRepresent
+            lns1 = unlines strOutput
                           in do
-                             _ <- (if null dcfile then mapM putStrLn strOutput else do {mapM putStrLn strOutput >> doesFileExist dcfile >>= \exist -> if exist then do {getPermissions dcfile >>= \perms -> if writable perms then mapM (writeFile dcfile) strOutput else error $ "Phladiprelio.General.IO.generalF: File " `mappend` dcfile `mappend` " is not writable!"} else do {getCurrentDirectory >>= \currdir -> do {getPermissions currdir >>= \perms -> if writable perms then mapM (writeFile dcfile) strOutput else error $ "Phladiprelio.General.IO.generalF: Directory of the file " `mappend` dcfile `mappend` " is not writable!"}}})
+                             putStrLn lns1
+                             if null dcfile then putStr "" 
+                             else do 
+                                 doesFileExist dcfile >>= \exist -> if exist then do 
+                                       getPermissions dcfile >>= \perms -> if writable perms then writeFile dcfile lns1 
+                                                                           else error $ "Phladiprelio.General.IO.generalF: File " `mappend` dcfile `mappend` " is not writable!" 
+                                    else do 
+                                       getCurrentDirectory >>= \currdir -> do 
+                                          getPermissions currdir >>= \perms -> if writable perms then writeFile dcfile lns1 
+                                                                               else error $ "Phladiprelio.General.IO.generalF: Directory of the file " `mappend` dcfile `mappend` " is not writable!"
                              let l1 = length sRepresent
                              if code == -1 
                                  then if lineNmb == -1 then return strOutput
@@ -170,87 +186,91 @@ argsProcessing wrs ks arr gs us vs h ysss zsss xs = do
   args0 <- getArgs
   let (argsC, args) = takeCs1R ('+','-') cSpecs args0
       (argsB, args11) = takeBsR bSpecs args
-      prepare = any (== "-p") args11
-      emptyline = any (== "+l") args11 
-      splitting = fromMaybe 50 (readMaybe (concat . getB "+w" $ argsB)::Maybe Int8) 
-      concurrently = any (== "-C") args11
-      dcspecs = getB "+dc" argsB
-      (html,dcfile) 
-        | null dcspecs = (False, "")
-        | otherwise = (head dcspecs == "1",last dcspecs)
-      selStr = concat . getB "+ul" $ argsB
-      filedata = getB "+f" argsB
-      power10' = fromMaybe 4 (readMaybe (concat . getB "+q" $ argsB)::Maybe Int)
-      power10 
-         | power10' < 2 && power10' > 6 = 4
-         | otherwise = power10'
-      (multiline2, multiline2LineNum)
-        | oneB "+m3" argsB =
-            let r1ss = getB "+m3" argsB in
-                  if length r1ss == 3
-                      then let (kss,qss) = splitAt 2 r1ss in
-                                   (kss, max 1 (fromMaybe 1 (readMaybe (concat qss)::Maybe Int)))
-                      else (r1ss, 1)
-        | oneB "+m2" argsB = (getB "+m" argsB,  max 1 (fromMaybe 1 (readMaybe (concat . getB "+m2" $ argsB)::Maybe Int)))
-        | otherwise = (getB "+m" argsB, -1)
-      (fileread,lineNmb)
-        | null multiline2 = ("",-1)
-        | length multiline2 == 2 = (head multiline2, fromMaybe 1 (readMaybe (last multiline2)::Maybe Int))
-        | otherwise = (head multiline2, 1)
-  (arg3s,prestr,poststr,linecomp3) <- do
-       if lineNmb /= -1 then do
-           txtFromFile <- readFile fileread
-           let lns = lines txtFromFile
-               ll1 = length lns
-               ln0 = max 1 (min lineNmb (length lns))
-               lm3
-                 | multiline2LineNum < 1 = -1
-                 | otherwise = max 1 . min multiline2LineNum $ ll1
-               linecomp3
-                 | lm3 == -1 = []
-                 | otherwise = lns !! (lm3 - 1)
-               ln_1 
-                  | ln0 == 1 = 0
-                  | otherwise = ln0 - 1
-               ln1
-                  | ln0 == length lns = 0
-                  | otherwise = ln0 + 1
-               lineF = lns !! (ln0 - 1)
-               line_1F 
-                  | ln_1 == 0 = []
-                  | otherwise = lns !! (ln_1 - 1)
-               line1F
-                  | ln1 == 0 = []
-                  | otherwise = lns !! (ln1 - 1)
-           return $ (words lineF, line_1F,line1F,linecomp3)
-       else return (args11, [], [],[])
-  let line2comparewith
-        | oneC "+l2" argsC || null linecomp3 = unwords . getC "+l2" $ argsC
-        | otherwise = linecomp3
-      basecomp = read3 (not . null . filter (not . isSpace)) 1.0 (mconcat . h . createSyllablesPL wrs ks arr gs us vs) line2comparewith
-      (filesave,codesave)
-        | null filedata = ("",-1)
-        | length filedata == 2 = (head filedata, fromMaybe 0 (readMaybe (last filedata)::Maybe Int))
-        | otherwise = (head filedata,0)
-      ll = let maxWordsNum = (if any (== "+x") arg3s then 9 else 7) in take maxWordsNum . (if prepare then id else words . mconcat . prepareTextN maxWordsNum ysss zsss xs . unwords) $ arg3s
-      l = length ll
-      argCs = catMaybes (fmap (readMaybeECG l) . getC "+a" $ argsC)
-      argCBs = unwords . getC "+b" $ argsC -- If you use the parenthese with +b ... -b then consider also using the quotation marks for the whole algebraic constraint. At the moment though it is still not working properly for parentheses functionality. The issue should be fixed in the further releases.
-      !perms 
-        | not (null argCBs) = filterGeneralConv l argCBs . genPermutationsL $ l
-        | null argCs = genPermutationsL l
-        | otherwise = decodeLConstraints argCs . genPermutationsL $ l 
-      basiclineoption = unwords arg3s
-      example = read3 (not . null . filter (not . isSpace)) 1.0 (mconcat . h .  createSyllablesPL wrs ks arr gs us vs) (unwords arg3s)
-      le = length example
-      lb = length basecomp
-      gcd1 = gcd le lb
-      ldc = le * lb `quot` gcd1
-      mulp = ldc `quot` lb
-      max2 = maximum basecomp
-      compards = concatMap (replicate mulp . (/ max2)) basecomp
-      variants1 = uniquenessVariants2GNBL ' ' id id id perms ll
-  return (power10, ldc, compards, html, dcfile, selStr, prestr, poststr, lineNmb, emptyline, splitting, filesave, codesave, concurrently, basiclineoption, variants1)
+      compareByLinesFinalFile = concat . getB "-cm" $ argsB
+  if not . null $ compareByLinesFinalFile then do
+      compareFilesToOneCommon 14 args11 compareByLinesFinalFile
+  else do
+    let prepare = any (== "-p") args11
+        emptyline = any (== "+l") args11 
+        splitting = fromMaybe 50 (readMaybe (concat . getB "+w" $ argsB)::Maybe Int8) 
+        concurrently = any (== "-C") args11
+        dcspecs = getB "+dc" argsB
+        (html,dcfile) 
+          | null dcspecs = (False, "")
+          | otherwise = (head dcspecs == "1",last dcspecs)
+        selStr = concat . getB "+ul" $ argsB
+        filedata = getB "+f" argsB
+        power10' = fromMaybe 4 (readMaybe (concat . getB "+q" $ argsB)::Maybe Int)
+        power10 
+           | power10' < 2 && power10' > 6 = 4
+           | otherwise = power10'
+        (multiline2, multiline2LineNum)
+          | oneB "+m3" argsB =
+              let r1ss = getB "+m3" argsB in
+                    if length r1ss == 3
+                        then let (kss,qss) = splitAt 2 r1ss in
+                                     (kss, max 1 (fromMaybe 1 (readMaybe (concat qss)::Maybe Int)))
+                        else (r1ss, 1)
+          | oneB "+m2" argsB = (getB "+m" argsB,  max 1 (fromMaybe 1 (readMaybe (concat . getB "+m2" $ argsB)::Maybe Int)))
+          | otherwise = (getB "+m" argsB, -1)
+        (fileread,lineNmb)
+          | null multiline2 = ("",-1)
+          | length multiline2 == 2 = (head multiline2, fromMaybe 1 (readMaybe (last multiline2)::Maybe Int))
+          | otherwise = (head multiline2, 1)
+    (arg3s,prestr,poststr,linecomp3) <- do
+         if lineNmb /= -1 then do
+             txtFromFile <- readFile fileread
+             let lns = lines txtFromFile
+                 ll1 = length lns
+                 ln0 = max 1 (min lineNmb (length lns))
+                 lm3
+                   | multiline2LineNum < 1 = -1
+                   | otherwise = max 1 . min multiline2LineNum $ ll1
+                 linecomp3
+                   | lm3 == -1 = []
+                   | otherwise = lns !! (lm3 - 1)
+                 ln_1 
+                    | ln0 == 1 = 0
+                    | otherwise = ln0 - 1
+                 ln1
+                    | ln0 == length lns = 0
+                    | otherwise = ln0 + 1
+                 lineF = lns !! (ln0 - 1)
+                 line_1F 
+                    | ln_1 == 0 = []
+                    | otherwise = lns !! (ln_1 - 1)
+                 line1F
+                    | ln1 == 0 = []
+                    | otherwise = lns !! (ln1 - 1)
+             return $ (words lineF, line_1F,line1F,linecomp3)
+         else return (args11, [], [],[])
+    let line2comparewith
+          | oneC "+l2" argsC || null linecomp3 = unwords . getC "+l2" $ argsC
+          | otherwise = linecomp3
+        basecomp = read3 (not . null . filter (not . isSpace)) 1.0 (mconcat . h . createSyllablesPL wrs ks arr gs us vs) line2comparewith
+        (filesave,codesave)
+          | null filedata = ("",-1)
+          | length filedata == 2 = (head filedata, fromMaybe 0 (readMaybe (last filedata)::Maybe Int))
+          | otherwise = (head filedata,0)
+        ll = let maxWordsNum = (if any (== "+x") arg3s then 9 else 7) in take maxWordsNum . (if prepare then id else words . mconcat . prepareTextN maxWordsNum ysss zsss xs . unwords) $ arg3s
+        l = length ll
+        argCs = catMaybes (fmap (readMaybeECG l) . getC "+a" $ argsC)
+        argCBs = unwords . getC "+b" $ argsC -- If you use the parenthese with +b ... -b then consider also using the quotation marks for the whole algebraic constraint. At the moment though it is still not working properly for parentheses functionality. The issue should be fixed in the further releases.
+        !perms 
+          | not (null argCBs) = filterGeneralConv l argCBs . genPermutationsL $ l
+          | null argCs = genPermutationsL l
+          | otherwise = decodeLConstraints argCs . genPermutationsL $ l 
+        basiclineoption = unwords arg3s
+        example = read3 (not . null . filter (not . isSpace)) 1.0 (mconcat . h .  createSyllablesPL wrs ks arr gs us vs) (unwords arg3s)
+        le = length example
+        lb = length basecomp
+        gcd1 = gcd le lb
+        ldc = le * lb `quot` gcd1
+        mulp = ldc `quot` lb
+        max2 = maximum basecomp
+        compards = concatMap (replicate mulp . (/ max2)) basecomp
+        variants1 = uniquenessVariants2GNBL ' ' id id id perms ll
+    return (power10, ldc, compards, html, dcfile, selStr, prestr, poststr, lineNmb, emptyline, splitting, filesave, codesave, concurrently, basiclineoption, variants1)
 
 processingF
  :: (String -> String) -- ^ A function that specifies what 'Char's in the list the first argument makes to be the function sensitive to. Analogue of the @g@ function in the definition: https://hackage.haskell.org/package/phonetic-languages-simplified-examples-array-0.21.0.0/docs/src/Phonetic.Languages.Simplified.Array.Ukrainian.FuncRep2RelatedG2.html#parsey0Choice. Use just small 'Char' if they are letters, do not use \'.\' and spaces.
@@ -280,7 +300,7 @@ cSpecs :: CLSpecifications
 cSpecs = zip ["+a","+b","+l2"] . cycle $ [-1]
 
 bSpecs :: CLSpecifications
-bSpecs = [("+f",2),("+m",2),("+m2",2),("+m3",3),("+ul",1),("+w",1),("+dc",2),("+q",1)]
+bSpecs = [("+f",2),("+m",2),("+m2",2),("+m3",3),("+ul",1),("+w",1),("+dc",2),("+q",1),("-cm",1)]
 
 {-| 'selectSounds' converts the argument after \"+ul\" command line argument into a list of sound representations that is used for evaluation of \'uniqueness periods\' properties of the line. Is a modified Phonetic.Languages.Simplified.Array.General.FuncRep2RelatedG2.parsey0Choice from the @phonetic-languages-simplified-generalized-examples-array-0.19.0.1@ package.
  -}

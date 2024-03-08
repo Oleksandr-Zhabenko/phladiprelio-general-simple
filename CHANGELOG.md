@@ -171,4 +171,7 @@ This significantly extends the general possibilities of the program, especially 
 
 * Fourteenth version revised B. Switched to newer versions of dependencies and removed the unneeded ones. Some performance improvements. Some documentation improvements. Added bug-tracker.
 
+## 0.15.0.0 -- 2024-03-08
 
+* Fifteenth version. Added special comparative mode to choose the option for the line among the lines in files using '-cm' command line argument. Some code improvements. Updated the  dependency boundaries. 
+ 

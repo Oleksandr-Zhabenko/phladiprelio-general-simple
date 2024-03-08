@@ -127,6 +127,11 @@ The version 0.14.0.0 is also devoted to the bright memory of the Artem Sachuk, w
 
 The version 0.14.2.0 is also devoted to Sophie Kok, a sister of Emma Kok, who turned 18 on the 06/01/2024. Besides, on the 22/01/2024 there is Day of Unity of Ukraine and on the 23/01/2024 there is for Orthodox Church memory of St. Paulinus of Nola. On the 30/01/2024 there is for the Greek-Orthodox and Greek-Catholics memory of Saints Basil the Great, Gregory the Theologian and John Chrysostom in their Council.
 
+The version 0.15.0.0 added new comparative line-by-line mode from various files. Uses '-cm' command line parameter. Analogue of the functionality by the link:
+https://oleksandr-zhabenko.github.io/uk/rhythmicity/PhLADiPreLiO.Eng.21.html#comparative-mode-of-operation-c
+
+On the 08/03/2024 there is International Women's Day.
+
 All support is welcome, including donations for the needs of the Ukrainian army, IDPs and refugees.
 
 If you would like to share some financial support, please, contact the mentioned foundation
