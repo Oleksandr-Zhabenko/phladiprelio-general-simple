@@ -1,6 +1,6 @@
 cabal-version:      2.4
 name:               phladiprelio-general-simple
-version:            0.20.0.0
+version:            0.20.0.1
 
 -- A short (one-line) description of the package.
 synopsis:           A generalized functionality of PhLADiPreLiO for different languages that uses hash algorithms.

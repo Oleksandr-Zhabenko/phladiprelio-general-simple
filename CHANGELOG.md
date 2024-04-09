@@ -179,3 +179,7 @@ This significantly extends the general possibilities of the program, especially 
 
 * Twentieth version. Switched to Word8 instead of Double for durations of the PRS and syllables. Made a version window for releases with Double-related functionality. The results now are expected to be different, because it uses a significantly different scheme of computation. Some performance and memory consumption improvements.
 
+ ## 0.20.0.1 -- 2024-04-09
+
+* Twentieth version revised A. Fixed issue with documentation for conversion function that now uses Word8 instead of Double.
+

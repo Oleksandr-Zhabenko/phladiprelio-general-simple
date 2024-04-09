@@ -58,7 +58,7 @@ generalF
  -> SegmentRulesG
  -> String -- ^ Corresponds to the 100 delimiter in the @ukrainian-phonetics-basic-array@ package.
  -> String -- ^ Corresponds to the 101 delimiter in the @ukrainian-phonetics-basic-array@ package.
- -> ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function, supposedly @f::[[[PRS]]]->[[Double]]@ into this argument as follows: @g = zippedDouble2Word8 . f@
+ -> ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function into the new one. If you have the function used inside the @f::[[[PRS]]]->[[Double]]@ with main conversion semantically similar to the one by the link: 'https://hackage.haskell.org/package/ukrainian-phonetics-basic-array-0.7.1.1/docs/Phladiprelio-Ukrainian-SyllableDouble.html#v:syllableDurationsD', then you can use 'zippedDouble2Word8' to transform the main semantic kernel of [(PRS, Double)] into [(PRS, Word8)].
  -> Int
  -> HashCorrections 
  -> (Int8,[Int8])
@@ -178,7 +178,7 @@ argsProcessing
  -> SegmentRulesG
  -> String -- ^ Corresponds to the 100 delimiter in the @ukrainian-phonetics-basic-array@ package.
  -> String -- ^ Corresponds to the 101 delimiter in the @ukrainian-phonetics-basic-array@ package.
- -> ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function, supposedly @f::[[[PRS]]]->[[Double]]@ into this argument as follows: @g = zippedDouble2Word8 . f@
+ -> ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function into the new one. If you have the function used inside the @f::[[[PRS]]]->[[Double]]@ with main conversion semantically similar to the one by the link: 'https://hackage.haskell.org/package/ukrainian-phonetics-basic-array-0.7.1.1/docs/Phladiprelio-Ukrainian-SyllableDouble.html#v:syllableDurationsD', then you can use 'zippedDouble2Word8' to transform the main semantic kernel of [(PRS, Double)] into [(PRS, Word8)].
  -> [[String]]
  -> [[String]]
  -> String 
@@ -282,7 +282,7 @@ processingF
  -> SegmentRulesG
  -> String -- ^ Corresponds to the 100 delimiter in the @ukrainian-phonetics-basic-array@ package.
  -> String -- ^ Corresponds to the 101 delimiter in the @ukrainian-phonetics-basic-array@ package.
- -> ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function, supposedly @f::[[[PRS]]]->[[Double]]@ into this argument as follows: @g = zippedDouble2Word8 . f@
+ -> ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function into the new one. If you have the function used inside the @f::[[[PRS]]]->[[Double]]@ with main conversion semantically similar to the one by the link: 'https://hackage.haskell.org/package/ukrainian-phonetics-basic-array-0.7.1.1/docs/Phladiprelio-Ukrainian-SyllableDouble.html#v:syllableDurationsD', then you can use 'zippedDouble2Word8' to transform the main semantic kernel of [(PRS, Double)] into [(PRS, Word8)].
  -> Int
  -> HashCorrections 
  -> (Int8,[Int8]) 
@@ -341,7 +341,7 @@ testsOutput concurrently syllN f ldc numTest universalSet = do
 -- | Internal part of the 'generalF' for processment with a file.
 outputWithFile
   :: (Eq a1, Num a1) =>
-     ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function, supposedly @f::[[[PRS]]]->[[Double]]@ into this argument as follows: @g = zippedDouble2Word8 . f@
+     ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function into the new one. If you have the function used inside the @f::[[[PRS]]]->[[Double]]@ with main conversion semantically similar to the one by the link: 'https://hackage.haskell.org/package/ukrainian-phonetics-basic-array-0.7.1.1/docs/Phladiprelio-Ukrainian-SyllableDouble.html#v:syllableDurationsD', then you can use 'zippedDouble2Word8' to transform the main semantic kernel of [(PRS, Double)] into [(PRS, Word8)].
      -> GWritingSystemPRPLX -- ^ Data used to obtain the phonetic language representation of the text.
      -> [(Char, Char)] -- ^ The pairs of the 'Char' that corresponds to the similar phonetic languages consonant phenomenon (e. g. allophones). Must be sorted in the ascending order to be used correctly. 
      -> CharPhoneticClassification
