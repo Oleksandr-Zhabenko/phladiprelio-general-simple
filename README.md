@@ -1,6 +1,6 @@
 The library is the new implementation of the ideas related to PhLADiPreLiO (Phonetic Languages
 Approach to Discovering the Preferred Line Options) for different languages. It uses hashes and
-has at the moment (as of the version 0.14.2.0) not the full functionality. The previous implementation 
+has at the moment (as of the version 0.20.0.0) not the full functionality. The previous implementation 
 and its documentation are at the links:
 
 [Old approach](https://hackage.haskell.org/package/phonetic-languages-simplified-generalized-examples-array)
@@ -65,7 +65,8 @@ possibilities of the program, especially for the music composing.
 
 Since the version 0.13.0.0 there is a possibility to change the durations of the selected syllables
 using the ={set of digits} precisely after the needed syllable. For more information, see the output
-of the call of the program with the -h command line argument. This significantly extends the general
+of the call of the program phladiprelioUkr from the parallel project phladiprelio-ukrainian-simple 
+with the -h command line argument. This significantly extends the general
 possibilities of the program, especially for the music composing.
 
 Since the version 0.14.0.0 there were fixed issues with distance between line options in several branches and added a possibility to analyse and compare two lines from the same file using either additionally to +m also +m2 group of command line arguments, or +m3 group of arguments instead.
@@ -74,6 +75,11 @@ For the list of bash aliases a few of which are used in the videos, see:
 https://github.com/Oleksandr-Zhabenko/phladiprelio-alias/blob/main/.bashrc
 
 The version 0.14.2.0 fixes issue with one syllable before '=' sign in the music mode and applies some performance improvements.
+
+ Breaking changes in version 0.20.0.0
+ ====================================
+
+Since the version 0.20.0.0 the way of calculation is significantly changed, therefore the results are expected to be different. Please, have this in mind. It is expected to have larger groups and more options to choose from. Nevertheless, the approach becomes more stable. The performance and resources consumtion are very closely comparable with probably some subtle differences between versions 0.15.* and 0.20.0.0.
 
  Devotion
  ========
@@ -131,6 +137,10 @@ The version 0.15.0.0 added new comparative line-by-line mode from various files.
 https://oleksandr-zhabenko.github.io/uk/rhythmicity/PhLADiPreLiO.Eng.21.html#comparative-mode-of-operation-c
 
 On the 08/03/2024 there is International Women's Day.
+
+On the 12/03/2024 there was a Birthday of Emma Kok, the founder of the Foundation Gastrostars. She turned 16. Therefore, the release 0.20.0.0 is devoted i.e. tributede to her.
+
+Besides, you can support Ukrainian people in various forms.
 
 All support is welcome, including donations for the needs of the Ukrainian army, IDPs and refugees.
 

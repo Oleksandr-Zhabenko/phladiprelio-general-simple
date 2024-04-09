@@ -174,4 +174,8 @@ This significantly extends the general possibilities of the program, especially 
 ## 0.15.0.0 -- 2024-03-08
 
 * Fifteenth version. Added special comparative mode to choose the option for the line among the lines in files using '-cm' command line argument. Some code improvements. Updated the  dependency boundaries. 
- 
+
+ ## 0.20.0.0 -- 2024-04-09
+
+* Twentieth version. Switched to Word8 instead of Double for durations of the PRS and syllables. Made a version window for releases with Double-related functionality. The results now are expected to be different, because it uses a significantly different scheme of computation. Some performance and memory consumption improvements.
+

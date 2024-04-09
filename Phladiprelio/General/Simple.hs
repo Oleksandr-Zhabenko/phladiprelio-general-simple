@@ -5,6 +5,8 @@ module Phladiprelio.General.Simple where
 import GHC.Base
 import GHC.Enum (fromEnum)
 import GHC.Real (Integral,fromIntegral,(/),quot,rem,quotRem,round,gcd,(^))
+import GHC.Word
+import GHC.Generics
 import Text.Show (Show(..))
 import Phladiprelio.General.PrepareText 
 import Phladiprelio.General.Syllables 
@@ -15,6 +17,7 @@ import Text.Read (readMaybe)
 import System.IO (putStrLn, FilePath,stdout,universalNewlineMode,hSetNewlineMode,getLine,appendFile,readFile,writeFile,putStr)
 import Rhythmicity.MarkerSeqs hiding (id) 
 import Data.List hiding (foldr)
+import Data.Ord (Down(..))
 import Data.Maybe (fromMaybe, mapMaybe, catMaybes,isNothing,fromJust) 
 import Data.Tuple (fst)
 import Data.Char (isDigit,isSpace)
@@ -37,11 +40,12 @@ import Phladiprelio.General.Datatype3
 import Phladiprelio.General.Distance
 import Phladiprelio.UniquenessPeriodsG
 import Data.ChooseLine
+import Control.DeepSeq
 
 generalF 
- :: Int -- ^ A power of 10. 10 in this power is then multiplied the value of distance if the next ['Double'] argument is not empty. The default one is 4. The proper values are in the range [2..6].
+ :: Int -- ^ A power of 10. The resulting distance using next ['Word8'] argument is quoted by 10 in this power. The default one is 0. The proper values are in the range [0..4].
  -> Int -- ^ A 'length' of the next argument here.
- -> [Double] -- ^ A list of non-negative values normed by 1.0 (the greatest of which is 1.0) that the line options are compared with. If null, then the program works as for version 0.12.1.0 without this newly-introduced argument since the version 0.13.0.0. The length of it must be a least common multiplier of the (number of syllables plus number of \'_digits\' groups) to work correctly. Is not used when the next 'FilePath' and 'String' arguments are not null.
+ -> [Word8] -- ^ A list of non-negative values normed by 255 (the greatest of which is 255) that the line options are compared with. If null, then the program works as for version 0.12.1.0 without this newly-introduced argument since the version 0.13.0.0. The length of it must be a least common multiplier of the (number of syllables plus number of \'_digits\' groups) to work correctly. Is not used when the next 'FilePath' and 'String' arguments are not null.
  -> Bool -- ^ If 'True' then adds \"<br>\" to line endings for double column output
  -> FilePath -- ^ A path to the file to save double columns output to. If empty then just prints to 'stdout'.
  -> String -- ^ If not null than instead of rhythmicity evaluation using hashes and and feets, there is computed a diversity property for the specified 'String' here using the 'selectSounds' function. For more information, see: 'https://oleksandr-zhabenko.github.io/uk/rhythmicity/PhLADiPreLiO.Eng.21.html#types'
@@ -54,7 +58,7 @@ generalF
  -> SegmentRulesG
  -> String -- ^ Corresponds to the 100 delimiter in the @ukrainian-phonetics-basic-array@ package.
  -> String -- ^ Corresponds to the 101 delimiter in the @ukrainian-phonetics-basic-array@ package.
- -> ([[[PRS]]] -> [[Double]])
+ -> ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function, supposedly @f::[[[PRS]]]->[[Double]]@ into this argument as follows: @g = zippedDouble2Word8 . f@
  -> Int
  -> HashCorrections 
  -> (Int8,[Int8])
@@ -77,15 +81,14 @@ generalF power10 ldc compards html dcfile selStr selFun (prestr,poststr) lineNmb
      return universalSet
  | otherwise = do
    let syllN = countSyll wrs arr us vs initstr
---       universalSet = map unwords . permutations $ rss
        f ldc compards grps mxms 
-          | null selStr = (if null compards then (sum . countHashes2G hashStep hc grps mxms) else (round . (*10^power10) . distanceSqrG2 ldc compards)) . read3 (not . null . filter (not . isSpace)) 1.0 (mconcat . h .  createSyllablesPL wrs ks arr gs us vs)
+          | null selStr = (if null compards then (sum . countHashes2G hashStep hc grps mxms) else ((`quot` 10^power10) . fromIntegral . sumAbsDistNorm compards)) . read3 (not . null . filter (not . isSpace)) 1.0 (mconcat . h .  createSyllablesPL wrs ks arr gs us vs)
           | otherwise = fromIntegral . diverse2GGL (selectSounds selFun selStr) (us `mappend` vs) . concatMap string1 . stringToXG wrs . filter (\c -> not (isDigit c) && c /= '_' && c /= '=')
    hSetNewlineMode stdout universalNewlineMode
    if numTest >= 0 && numTest <= 179 && numTest /= 1 && null compards then testsOutput concurrently syllN f ldc numTest universalSet 
    else let sRepresent = zipWith (\k (x, ys) -> S k x ys) [1..] . 
-             (let h1 = if descending then (\(u,w) -> ((-1)*u,w)) else id in sortOn h1) . map (\xss -> (f ldc compards grps mxms xss, xss)) $ universalSet
-            strOutput = (:[]) . halfsplit1G (\(S _ y _) -> y) (if html then "<br>" else "") (jjj splitting) $ sRepresent
+             (if descending then sortOn (\(u,w) -> (Down u,w)) else sortOn id) . map (\xss -> (f ldc compards grps mxms xss, xss)) $ universalSet
+            strOutput = force . (:[]) . halfsplit1G (\(S _ y _) -> y) (if html then "<br>" else "") (jjj splitting) $ sRepresent
             lns1 = unlines strOutput
                           in do
                              putStrLn lns1
@@ -175,11 +178,11 @@ argsProcessing
  -> SegmentRulesG
  -> String -- ^ Corresponds to the 100 delimiter in the @ukrainian-phonetics-basic-array@ package.
  -> String -- ^ Corresponds to the 101 delimiter in the @ukrainian-phonetics-basic-array@ package.
- -> ([[[PRS]]] -> [[Double]])
+ -> ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function, supposedly @f::[[[PRS]]]->[[Double]]@ into this argument as follows: @g = zippedDouble2Word8 . f@
  -> [[String]]
  -> [[String]]
  -> String 
- -> IO (Int, Int, [Double], Bool, FilePath, String, String, String, Int, Bool, Int8, FilePath, Int, Bool, String, [String]) -- ^ These ones are intended to be used inside 'generalF'.
+ -> IO (Int, Int, [Word8], Bool, FilePath, String, String, String, Int, Bool, Int8, FilePath, Int, Bool, String, [String]) -- ^ These ones are intended to be used inside 'generalF'.
 argsProcessing wrs ks arr gs us vs h ysss zsss xs = do
   args0 <- getArgs
   let (argsC, args) = takeCs1R ('+','-') cSpecs args0
@@ -199,9 +202,9 @@ argsProcessing wrs ks arr gs us vs h ysss zsss xs = do
           | otherwise = (head dcspecs == "1",last dcspecs)
         selStr = concat . getB "+ul" $ argsB
         filedata = getB "+f" argsB
-        power10' = fromMaybe 4 (readMaybe (concat . getB "+q" $ argsB)::Maybe Int)
+        power10' = fromMaybe 0 (readMaybe (concat . getB "+q" $ argsB)::Maybe Int)
         power10 
-           | power10' < 2 && power10' > 6 = 4
+           | power10' < 0 && power10' > 4 = 0
            | otherwise = power10'
         (multiline2, multiline2LineNum)
           | oneB "+m3" argsB =
@@ -246,7 +249,7 @@ argsProcessing wrs ks arr gs us vs h ysss zsss xs = do
     let line2comparewith
           | oneC "+l2" argsC || null linecomp3 = unwords . getC "+l2" $ argsC
           | otherwise = linecomp3
-        basecomp = read3 (not . null . filter (not . isSpace)) 1.0 (mconcat . h . createSyllablesPL wrs ks arr gs us vs) line2comparewith
+        basecomp = force . read3 (not . null . filter (not . isSpace)) 1.0 (mconcat . h . createSyllablesPL wrs ks arr gs us vs) $ line2comparewith
         (filesave,codesave)
           | null filedata = ("",-1)
           | length filedata == 2 = (head filedata, fromMaybe 0 (readMaybe (last filedata)::Maybe Int))
@@ -260,15 +263,15 @@ argsProcessing wrs ks arr gs us vs h ysss zsss xs = do
           | null argCs = genPermutationsL l
           | otherwise = decodeLConstraints argCs . genPermutationsL $ l 
         basiclineoption = unwords arg3s
-        example = read3 (not . null . filter (not . isSpace)) 1.0 (mconcat . h .  createSyllablesPL wrs ks arr gs us vs) (unwords arg3s)
+        example = force . read3 (not . null . filter (not . isSpace)) 1.0 (mconcat . h .  createSyllablesPL wrs ks arr gs us vs) . unwords $ arg3s
         le = length example
         lb = length basecomp
         gcd1 = gcd le lb
         ldc = le * lb `quot` gcd1
         mulp = ldc `quot` lb
-        max2 = maximum basecomp
-        compards = concatMap (replicate mulp . (/ max2)) basecomp
-        variants1 = uniquenessVariants2GNBL ' ' id id id perms ll
+--        max2 = maximum basecomp
+        compards = force . concatMap (replicate mulp) $ basecomp
+        variants1 = force . uniquenessVariants2GNBL ' ' id id id perms $ ll
     return (power10, ldc, compards, html, dcfile, selStr, prestr, poststr, lineNmb, emptyline, splitting, filesave, codesave, concurrently, basiclineoption, variants1)
 
 processingF
@@ -279,7 +282,7 @@ processingF
  -> SegmentRulesG
  -> String -- ^ Corresponds to the 100 delimiter in the @ukrainian-phonetics-basic-array@ package.
  -> String -- ^ Corresponds to the 101 delimiter in the @ukrainian-phonetics-basic-array@ package.
- -> ([[[PRS]]] -> [[Double]])
+ -> ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function, supposedly @f::[[[PRS]]]->[[Double]]@ into this argument as follows: @g = zippedDouble2Word8 . f@
  -> Int
  -> HashCorrections 
  -> (Int8,[Int8]) 
@@ -307,7 +310,7 @@ selectSounds
   :: (String -> String) -- ^ A function that specifies what 'Char's in the list the first argument makes to be the function sensitive to. Analogue of the @g@ function in the definition: https://hackage.haskell.org/package/phonetic-languages-simplified-examples-array-0.21.0.0/docs/src/Phonetic.Languages.Simplified.Array.Ukrainian.FuncRep2RelatedG2.html#selectSounds. Use just small 'Char' if they are letters, do not use \'.\' and spaces.
   -> String 
   -> String
-selectSounds g xs = f . sort . concatMap g . words . map (\c -> if c  == '.' then ' ' else c) $ us
+selectSounds g xs = f . sortOn id . concatMap g . words . map (\c -> if c  == '.' then ' ' else c) $ us
     where (_,us) = break (== '.') . filter (\c -> c /= 'H' && c /= 'G') $ xs
           f (x:ts@(y:_)) 
            | x == y = f ts
@@ -328,7 +331,7 @@ testsOutput concurrently syllN f ldc numTest universalSet = do
       putStrLn "Feet   Val  Stat   Proxim" 
       (if concurrently then mapConcurrently else mapM) 
            (\(q,qs) -> let m = stat1 syllN (q,qs)
-                           (min1,max1) = fromJust . minMax11By (comparing (f ldc [] q qs)) $ universalSet 
+                           (min1,max1) = force . fromJust . minMax11By (comparing (f ldc [] q qs)) $ universalSet 
                            mx = f ldc [] q qs max1
                            strTest = (show (fromEnum q) `mappend` "   |   " `mappend`  show mx `mappend` "     " `mappend` show m `mappend` "  -> " `mappend` showFFloat (Just 3) (100 * fromIntegral mx / fromIntegral m) "%" `mappend` (if rem numTest 10 >= 4 
                                                                then -- let min1 = minimumBy (comparing (f ldc [] q qs)) universalSet in 
@@ -338,7 +341,7 @@ testsOutput concurrently syllN f ldc numTest universalSet = do
 -- | Internal part of the 'generalF' for processment with a file.
 outputWithFile
   :: (Eq a1, Num a1) =>
-     ([[[PRS]]] -> [[Double]])
+     ([[[PRS]]] -> [[Word8]]) -- ^ Since the version 0.20.0.0, here there are 'Word8' instead of 'Double'. If this function is @g@, then the module 'Phladiprelio.General.Datatype3' has corresponding function 'Phladiprelio.General.Datatype3.zippedDouble2Word8' to transform the previously used function, supposedly @f::[[[PRS]]]->[[Double]]@ into this argument as follows: @g = zippedDouble2Word8 . f@
      -> GWritingSystemPRPLX -- ^ Data used to obtain the phonetic language representation of the text.
      -> [(Char, Char)] -- ^ The pairs of the 'Char' that corresponds to the similar phonetic languages consonant phenomenon (e. g. allophones). Must be sorted in the ascending order to be used correctly. 
      -> CharPhoneticClassification
@@ -346,7 +349,7 @@ outputWithFile
      -> String -- ^ Corresponds to the 100 delimiter in the @ukrainian-phonetics-basic-array@ package.
      -> String -- ^ Corresponds to the 101 delimiter in the @ukrainian-phonetics-basic-array@ package.
      -> String -- ^ If not null than instead of rhythmicity evaluation using hashes and and feets, there is computed a diversity property for the specified 'String' here using the 'selectSounds' function. For more information, see: 'https://oleksandr-zhabenko.github.io/uk/rhythmicity/PhLADiPreLiO.Eng.21.html#types'
-     -> [Double] -- ^ A list of non-negative values normed by 1.0 (the greatest of which is 1.0) that the line options are compared with. If null, then the program works as for version 0.12.1.0 without this newly-introduced argument since the version 0.13.0.0. The length of it must be a least common multiplier of the (number of syllables plus number of \'_digits\' groups) to work correctly. Is not used when the next 'FilePath' and 'String' arguments are not null.
+     -> [Word8] -- ^ A list of non-negative values normed by 255 (the greatest of which is 255) that the line options are compared with. If null, then the program works as for version 0.12.1.0 without this newly-introduced argument since the version 0.13.0.0. The length of it must be a least common multiplier of the (number of syllables plus number of \'_digits\' groups) to work correctly. Is not used when the next 'FilePath' and 'String' arguments are not null.
      -> [PhladiprelioGen]
      -> Int
      -> a1
