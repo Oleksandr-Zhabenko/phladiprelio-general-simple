@@ -1,4 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude, BangPatterns #-}
+{-# LANGUAGE NoImplicitPrelude, BangPatterns, DeriveGeneric #-}
 
 module Phladiprelio.General.Simple where
 
@@ -123,10 +123,12 @@ generalF power10 ldc compards html dcfile selStr selFun (prestr,poststr) lineNmb
              | r1 < 0 = -10*q1 + (if emptyline then -4 else r1)
              | otherwise = 10*q1 + (if emptyline then 4 else r1)
 
-data PhladiprelioGen = S Int Integer String deriving Eq
+data PhladiprelioGen = S Int Integer String deriving (Eq, Generic)
 
 instance Show PhladiprelioGen where
   show (S i j xs) = showBignum 7 j `mappend` " " `mappend` xs `mappend` "  " `mappend` showWithSpaces 4 i
+
+instance NFData PhladiprelioGen
 
 countSyll 
   :: GWritingSystemPRPLX -- ^ Data used to obtain the phonetic language representation of the text.

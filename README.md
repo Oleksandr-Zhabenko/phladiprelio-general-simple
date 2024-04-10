@@ -138,7 +138,7 @@ https://oleksandr-zhabenko.github.io/uk/rhythmicity/PhLADiPreLiO.Eng.21.html#com
 
 On the 08/03/2024 there is International Women's Day.
 
-On the 12/03/2024 there was a Birthday of Emma Kok, the founder of the Foundation Gastrostars. She turned 16. Therefore, the releases 0.20.0.0 and 0.20.0.1 are devoted i.e. tributed to her.
+On the 12/03/2024 there was a Birthday of Emma Kok, the founder of the Foundation Gastrostars. She turned 16. Therefore, the releases 0.20.0.0, 0.20.0.1 and 0.20.0.2 are devoted i.e. tributed to her.
 
 Besides, you can support Ukrainian people in various forms.
 
